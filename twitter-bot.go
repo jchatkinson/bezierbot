@@ -2,22 +2,33 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 )
 
-// InputFolder is the location for saved input photos
-var InputFolder = "./img/input/"
+import mathrand "math/rand"
 
-// OutputFolder is the location for output photos
-var OutputFolder = "./img/output/"
+const (
+	_GET          = iota
+	_POST         = iota
+	_DELETE       = iota
+	_PUT          = iota
+	UploadBaseUrl = "https://upload.twitter.com/1.1"
+	InputFolder   = "./img/input/"
+	OutputFolder  = "./img/output/"
+)
 
 func configure() *twitter.Client {
 	config := oauth1.NewConfig(ConsumerKey, ConsumerSecret)
@@ -49,7 +60,51 @@ func retweet(client *twitter.Client) {
 	}
 }
 
-func downloadPhoto(url string) {
+func encodePhoto(file string) (base64String string, err error) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	base64String = base64.StdEncoding.EncodeToString(data)
+	return
+}
+
+// uploadPhoto uploads the photo to twitter and returns the json response as a Media type
+func uploadPhoto(base64String string) (media Media, err error) {
+	v := url.Values{}
+	v.Set("media_data", base64String)
+	var mediaResponse Media
+	queue := make(chan Query)
+	queryQueue := queue
+	responseCh := make(chan response)
+	queryQueue <- Query{UploadBaseUrl + "/media/upload.json", v, &mediaResponse, _POST, responseCh}
+	return mediaResponse, (<-responseCh).err
+}
+
+func tweetPhoto(client *twitter.Client, text string, file string) {
+	// encode the photo
+	base64string, _ := encodePhoto(file)
+
+	// upload the photo
+	media, err := uploadPhoto(base64string)
+	if err != nil {
+		println("error uploading photo")
+		println(err)
+	}
+
+	// set the media id for the tweet
+	var vs *twitter.StatusUpdateParams
+	vs.MediaIds = make([]int64, media.MediaID)
+	// send a tweet with the media id and log the result
+	tweet, _, err := client.Statuses.Update(text, vs)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("TWEETED: %+v\n", tweet.Text)
+	}
+}
+
+func downloadPhoto(url string) (uuid, imgpath string) {
 	response, e := http.Get(url)
 	if e != nil {
 		log.Fatal(e)
@@ -57,9 +112,9 @@ func downloadPhoto(url string) {
 	defer response.Body.Close()
 
 	//open file for writing
-	//uuid, err := newUUID()
-	filename := "test.jpg"
-	imgpath := filepath.Join(InputFolder, filename)
+	uuid, err := newUUID()
+	filename := uuid + ".jpg"
+	imgpath = filepath.Join(InputFolder, filename)
 	file, err := os.Create(imgpath)
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +126,8 @@ func downloadPhoto(url string) {
 		log.Fatal(err)
 	}
 	file.Close()
-	fmt.Println("Success!")
+	fmt.Println("Image Downloaded!")
+	return
 }
 
 // newUUID generates a random UUID according to RFC 4122
@@ -89,14 +145,29 @@ func newUUID() (string, error) {
 }
 
 // processPhoto uses primative to process the photo
-func processPhoto() {
+func processPhoto(inputFile, outputFile string, n, m int) {
+	cmd := "primitive"
+	args := []string{"-i", inputFile, "-o", outputFile, "-n", strconv.Itoa(n), "-m", strconv.Itoa(m)}
+	if err := exec.Command(cmd, args...).Run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Println("Image Processed!")
+}
 
+func searchForPhoto() (url string) {
+	url = "https://blog.golang.org/gopher/header.jpg"
+	return
 }
 
 func main() {
-	// client := configure()
-	downloadPhoto("https://blog.golang.org/gopher/header.jpg")
-	processPhoto()
-
-	primative
+	client := configure()
+	url := searchForPhoto()
+	uuid, inputFile := downloadPhoto(url)
+	outputFile := "./img/output/" + uuid + ".out.jpg"
+	n := 50 + mathrand.Intn(450)
+	mode := 1
+	processPhoto(inputFile, outputFile, n, mode)
+	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + url + ")"
+	tweetPhoto(client, tweettext, outputFile)
 }
