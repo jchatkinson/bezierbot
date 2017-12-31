@@ -18,8 +18,6 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
-import mathrand "math/rand"
-
 const (
 	_GET          = iota
 	_POST         = iota
@@ -28,6 +26,7 @@ const (
 	UploadBaseUrl = "https://upload.twitter.com/1.1"
 	InputFolder   = "./img/input/"
 	OutputFolder  = "./img/output/"
+	BingURL       = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
 )
 
 func configure() *twitter.Client {
@@ -70,10 +69,9 @@ func encodePhoto(file string) (base64String string, err error) {
 }
 
 // uploadPhoto uploads the photo to twitter and returns the json response as a Media type
-func uploadPhoto(base64String string) (media Media, err error) {
+func uploadPhoto(base64String string) (mediaResponse Media, err error) {
 	v := url.Values{}
 	v.Set("media_data", base64String)
-	var mediaResponse Media
 	queue := make(chan Query)
 	queryQueue := queue
 	responseCh := make(chan response)
@@ -155,19 +153,14 @@ func processPhoto(inputFile, outputFile string, n, m int) {
 	fmt.Println("Image Processed!")
 }
 
-func searchForPhoto() (url string) {
-	url = "https://blog.golang.org/gopher/header.jpg"
-	return
-}
-
 func main() {
-	client := configure()
-	url := searchForPhoto()
-	uuid, inputFile := downloadPhoto(url)
-	outputFile := "./img/output/" + uuid + ".out.jpg"
-	n := 50 + mathrand.Intn(450)
-	mode := 1
-	processPhoto(inputFile, outputFile, n, mode)
-	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + url + ")"
-	tweetPhoto(client, tweettext, outputFile)
+	// client := configure()
+	_ = searchForPhoto()
+	// uuid, inputFile := downloadPhoto(url)
+	// outputFile := "./img/output/" + uuid + ".out.jpg"
+	// n := 50 + mathrand.Intn(450)
+	// mode := 1
+	// processPhoto(inputFile, outputFile, n, mode)
+	// tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + url + ")"
+	// tweetPhoto(client, tweettext, outputFile)
 }
