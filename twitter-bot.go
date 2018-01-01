@@ -18,6 +18,8 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+import mathrand "math/rand"
+
 const (
 	_GET          = iota
 	_POST         = iota
@@ -153,14 +155,14 @@ func processPhoto(inputFile, outputFile string, n, m int) {
 	fmt.Println("Image Processed!")
 }
 
-func main() {
-	// client := configure()
-	_ = searchForPhoto()
-	// uuid, inputFile := downloadPhoto(url)
-	// outputFile := "./img/output/" + uuid + ".out.jpg"
-	// n := 50 + mathrand.Intn(450)
-	// mode := 1
-	// processPhoto(inputFile, outputFile, n, mode)
-	// tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + url + ")"
-	// tweetPhoto(client, tweettext, outputFile)
+func postNewPhoto() {
+	client := configure()
+	photourl := searchForPhoto()
+	uuid, inputFile := downloadPhoto(photourl)
+	outputFile := "./img/output/" + uuid + ".out.jpg"
+	n := 200 + mathrand.Intn(450)
+	mode := 1
+	processPhoto(inputFile, outputFile, n, mode)
+	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + photourl + ")"
+	tweetPhoto(client, tweettext, outputFile)
 }
