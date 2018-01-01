@@ -9,10 +9,10 @@ import (
 
 // this gets the username from twitter. To use, `go run login-test.go`
 func testlogin() {
-	consumerKey := "Qmh1KE0vfbKH22YrJpyRkGuze"
-	consumerSecret := "xaKQpg02yHeWMFEcb5CgEaxIUSi69p4gYTEh4kYXCC53Egurps"
-	accessToken := "943990759975354369-Bs8xe2kqOkRDW6HasNtK7Di2ZXoHDqq"
-	accessSecret := "RfyWA1VlPV2eudfUOhoetUVv3FZXjVF1KqMKImgNi16oe"
+	consumerKey := "x" //do not commit these
+	consumerSecret := "x"
+	accessToken := "x"
+	accessSecret := "x"
 
 	config := oauth1.NewConfig(consumerKey, consumerSecret)
 	token := oauth1.NewToken(accessToken, accessSecret)
