@@ -1,17 +1,10 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
-	"net/http"
 	"net/url"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strconv"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -104,65 +97,17 @@ func tweetPhoto(client *twitter.Client, text string, file string) {
 	}
 }
 
-func downloadPhoto(url string) (uuid, imgpath string) {
-	response, e := http.Get(url)
-	if e != nil {
-		log.Fatal(e)
-	}
-	defer response.Body.Close()
-
-	//open file for writing
-	uuid, err := newUUID()
-	filename := uuid + ".jpg"
-	imgpath = filepath.Join(InputFolder, filename)
-	file, err := os.Create(imgpath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Use io.Copy to just dump the response body to the file. This supports huge files
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	file.Close()
-	fmt.Println("Image Downloaded!")
-	return
-}
-
-// newUUID generates a random UUID according to RFC 4122
-func newUUID() (string, error) {
-	uuid := make([]byte, 16)
-	n, err := io.ReadFull(rand.Reader, uuid)
-	if n != len(uuid) || err != nil {
-		return "", err
-	}
-	// variant bits; see section 4.1.1
-	uuid[8] = uuid[8]&^0xc0 | 0x80
-	// version 4 (pseudo-random); see section 4.1.3
-	uuid[6] = uuid[6]&^0xf0 | 0x40
-	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
-}
-
-// processPhoto uses primative to process the photo
-func processPhoto(inputFile, outputFile string, n, m int) {
-	cmd := "primitive"
-	args := []string{"-i", inputFile, "-o", outputFile, "-n", strconv.Itoa(n), "-m", strconv.Itoa(m)}
-	if err := exec.Command(cmd, args...).Run(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	fmt.Println("Image Processed!")
-}
-
 func postNewPhoto() {
-	client := configure()
 	photourl := searchForPhoto()
 	uuid, inputFile := downloadPhoto(photourl)
-	outputFile := "./img/output/" + uuid + ".out.jpg"
-	n := 200 + mathrand.Intn(450)
-	mode := 1
-	processPhoto(inputFile, outputFile, n, mode)
-	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(mode) + " (original: " + photourl + ")"
+	outputFile := "./img/output/" + uuid + "-out.jpg"
+	n := 200 + mathrand.Intn(300)
+	modes := []int{1, 4, 6}
+	m := mathrand.Intn(2)
+	processPhoto(inputFile, outputFile, n, modes[m])
+
+	// now post it on twitter
+	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(modes[m]) + " (original: " + photourl + ")"
+	client := configure()
 	tweetPhoto(client, tweettext, outputFile)
 }

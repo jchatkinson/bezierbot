@@ -9,13 +9,9 @@ import (
 
 // this gets the username from twitter. To use, `go run login-test.go`
 func testlogin() {
-	consumerKey := "x" //do not commit these
-	consumerSecret := "x"
-	accessToken := "x"
-	accessSecret := "x"
 
-	config := oauth1.NewConfig(consumerKey, consumerSecret)
-	token := oauth1.NewToken(accessToken, accessSecret)
+	config := oauth1.NewConfig(ConsumerKey, ConsumerSecret)
+	token := oauth1.NewToken(AccessToken, AccessSecret)
 
 	// OAuth1 http.Client will automatically authorize Requests
 	httpClient := config.Client(oauth1.NoContext, token)
