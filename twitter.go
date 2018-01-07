@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
-	"io/ioutil"
-	"net/url"
+	"log"
 	"strconv"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -54,60 +52,29 @@ func retweet(client *twitter.Client) {
 	}
 }
 
-func encodePhoto(file string) (base64String string, err error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
-	}
-	base64String = base64.StdEncoding.EncodeToString(data)
-	return
-}
-
-// uploadPhoto uploads the photo to twitter and returns the json response as a Media type
-func uploadPhoto(base64String string) (mediaResponse Media, err error) {
-	v := url.Values{}
-	v.Set("media_data", base64String)
-	queue := make(chan Query)
-	queryQueue := queue
-	responseCh := make(chan response)
-	queryQueue <- Query{UploadBaseUrl + "/media/upload.json", v, &mediaResponse, _POST, responseCh}
-	return mediaResponse, (<-responseCh).err
-}
-
-func tweetPhoto(client *twitter.Client, text string, file string) {
-	// encode the photo
-	base64string, _ := encodePhoto(file)
-
-	// upload the photo
-	media, err := uploadPhoto(base64string)
-	if err != nil {
-		println("error uploading photo")
-		println(err)
-	}
-
-	// set the media id for the tweet
-	var vs *twitter.StatusUpdateParams
-	vs.MediaIds = make([]int64, media.MediaID)
-	// send a tweet with the media id and log the result
-	tweet, _, err := client.Statuses.Update(text, vs)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Printf("TWEETED: %+v\n", tweet.Text)
-	}
-}
-
 func postNewPhoto() {
 	photourl := searchForPhoto()
 	uuid, inputFile := downloadPhoto(photourl)
 	outputFile := "./img/output/" + uuid + "-out.jpg"
 	n := 200 + mathrand.Intn(300)
 	modes := []int{1, 4, 6}
-	m := mathrand.Intn(2)
+	m := 1
 	processPhoto(inputFile, outputFile, n, modes[m])
 
 	// now post it on twitter
 	tweettext := "n=" + strconv.Itoa(n) + " mode=" + strconv.Itoa(modes[m]) + " (original: " + photourl + ")"
 	client := configure()
-	tweetPhoto(client, tweettext, outputFile)
+
+	media, _, err := client.Media.UploadFile(outputFile)
+	if err != nil {
+		log.Fatalf("UploadFile -> %v", err)
+	}
+	var params = twitter.StatusUpdateParams{MediaIds: []int64{media.MediaID}}
+
+	_, _, err = client.Statuses.Update(tweettext, &params)
+	if err != nil {
+		log.Fatalf("Statuses.Update -> %v", err)
+	} else {
+		fmt.Printf("TWEETED: %+v\n", tweettext)
+	}
 }
