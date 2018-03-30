@@ -15,6 +15,16 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, Gopher Network!")
 }
 
+func photoHandler(w http.ResponseWriter, r *http.Request) {
+	err := getPhotoOfTheDay()
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusExpectationFailed), http.StatusExpectationFailed)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return
+}
+
 func main() {
 	http.HandleFunc("/tasks/getphoto", photoHandler)
 	http.HandleFunc("/", indexHandler)
