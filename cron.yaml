@@ -1,0 +1,4 @@
+cron:
+- description: "daily photo retrieval"
+  url: /tasks/getphoto
+  schedule: every 24 hours

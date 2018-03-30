@@ -58,7 +58,7 @@ func postNewPhoto() {
 	outputFile := "./img/output/" + uuid + "-out.jpg"
 	n := 200 + mathrand.Intn(300)
 	modes := []int{1, 4, 6}
-	m := 1
+	m := 0
 	processPhoto(inputFile, outputFile, n, modes[m])
 
 	// now post it on twitter
