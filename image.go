@@ -13,12 +13,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 func searchForPhoto() (url string) {
-	var data map[string]interface{}
+	var data Data
 
 	photoClient := http.Client{
 		Timeout: time.Second * 2, // Maximum of 10 secs
@@ -40,8 +38,12 @@ func searchForPhoto() (url string) {
 	if err := json.Unmarshal(body, &data); err != nil {
 		panic(err)
 	}
-	json := string(body)
-	url = gjson.Get(json, "images.0.url").String()
+	// json := string(body)
+	//url = gjson.Get(json, "images.0.url").String()
+
+	url = data.Images[0].URL
+	fmt.Println(url)
+
 	url = "https://bing.com" + url
 	// fmt.Println(json)
 	fmt.Println(url)
