@@ -1,0 +1,13 @@
+runtime: go
+api_version: go1
+
+handlers:
+
+# Require admin priveledge to start cron job
+- url: /tasks/getphoto
+  script: _go_app
+  login: admin
+
+# All other URLs are handled by the Go application script
+- url: /.*
+  script: _go_app
