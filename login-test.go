@@ -9,7 +9,6 @@ import (
 
 // this gets the username from twitter. To use, `go run login-test.go`
 func testlogin() {
-
 	config := oauth1.NewConfig(ConsumerKey, ConsumerSecret)
 	token := oauth1.NewToken(AccessToken, AccessSecret)
 
