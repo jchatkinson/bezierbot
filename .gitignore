@@ -290,3 +290,4 @@ __pycache__/
 vars.go
 img/output/
 img/input/
+debug

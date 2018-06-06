@@ -24,11 +24,11 @@ type response struct {
 
 // Query type for a query
 type Query struct {
-	url         string
-	form        url.Values
-	data        interface{}
-	method      int
-	response_ch chan response
+	url        string
+	form       url.Values
+	data       interface{}
+	method     int
+	responseCh chan response
 }
 
 // Data type for the bing json data

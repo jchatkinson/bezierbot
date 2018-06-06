@@ -15,6 +15,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, Gopher Network!")
 }
 
+func photoHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 	http.HandleFunc("/tasks/getphoto", photoHandler)
 	http.HandleFunc("/", indexHandler)
