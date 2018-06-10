@@ -15,13 +15,16 @@ import (
 import mathrand "math/rand"
 
 const (
-	_GET          = iota
-	_POST         = iota
-	_DELETE       = iota
-	_PUT          = iota
-	UploadBaseUrl = "https://upload.twitter.com/1.1"
-	InputFolder   = "./img/input/"
-	OutputFolder  = "./img/output/"
+	_Get    = iota
+	_Post   = iota
+	_Delete = iota
+	_Put    = iota
+	// UploadBaseURL is the twitter url to hit
+	UploadBaseURL = "https://upload.twitter.com/1.1"
+	// InputFolder is where photos will be downloaded
+	InputFolder = "./img/input/"
+	// OutputFolder is where processed fotos will be saved
+	OutputFolder = "./img/output/"
 )
 
 func configure() *twitter.Client {
@@ -51,7 +54,7 @@ func uploadPhoto(base64String string) (media Media, err error) {
 	queue := make(chan Query)
 	queryQueue := queue
 	responseCh := make(chan response)
-	queryQueue <- Query{UploadBaseUrl + "/media/upload.json", v, &mediaResponse, _POST, responseCh}
+	queryQueue <- Query{UploadBaseURL + "/media/upload.json", v, &mediaResponse, _Post, responseCh}
 	return mediaResponse, (<-responseCh).err
 }
 
