@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"github.com/jchatkinson/go-twitter/twitter"
 )
 
 // this gets the username from twitter. To use, `go run login-test.go`
