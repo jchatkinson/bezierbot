@@ -1,4 +1,7 @@
 baseURL = "http://example.org/"
 languageCode = "en-us"
-title = "My New Hugo Site"
+title = "BezierBot's latest creations"
 theme = "gallery"
+
+[params]
+    AuthorName = "Jeremy Atkinson"
